@@ -1,5 +1,4 @@
 from openai import OpenAI
-from keys import OPENAI_API_KEY
 import os
 
 # Load the API key from the .env file
