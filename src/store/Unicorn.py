@@ -1,3 +1,5 @@
+import Location
+
 class Unicorn :
     
     def __init__ (
@@ -5,16 +7,16 @@ class Unicorn :
             uuid: int,
             image: str, 
             name: str,
-            place_name: str,
-            place_lon: float,
-            place_lat: float,
-            spotted_when: str            
+            spotted_when: str,
+            description: str,
+            reported_by: str,
+            spotted_where: Location,  
         ) : 
-        
+
         self.uuid = uuid
         self.image = image
         self.name = name
-        self.place_name = place_name
-        self.place_lon = place_lon
-        self.place_lat = place_lat
+        self.spotted_where = spotted_where
         self.spotted_when = spotted_when
+        self.reported_by = reported_by
+        self.description = description
