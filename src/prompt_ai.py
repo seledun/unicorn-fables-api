@@ -3,10 +3,11 @@ from keys import OPENAI_API_KEY
 import os
 
 # Load the API key from the .env file
-#api_key = os.getenv("OPENAI_API_KEY")
-#api_key = OPENAI_API_KEY
+api_key = os.getenv("OPENAI_API_KEY")
 
-client = OpenAI(OPENAI_API_KEY)
+OpenAI.api_key = api_key
+
+client = OpenAI()
 
 
 completion = client.chat.completions.create(
