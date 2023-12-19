@@ -1,13 +1,13 @@
-
-import os
 from openai import OpenAI
-import keys
+from keys import OPENAI_API_KEY
+import os
 
 # Load the API key from the .env file
 #api_key = os.getenv("OPENAI_API_KEY")
-api_key = keys("OPENAI_API_KEY")
+#api_key = OPENAI_API_KEY
 
-client = OpenAI(api_key)
+client = OpenAI(OPENAI_API_KEY)
+
 
 completion = client.chat.completions.create(
   model="gpt-3.5-turbo",   
