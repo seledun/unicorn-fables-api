@@ -7,6 +7,7 @@ from store.Fable import Fable
 from store.Location import Location
 from flask import request
 from flask import Flask
+from flask import Response
 
 import store.databaseHelper as db
 
@@ -51,7 +52,11 @@ def get_unicorn(id: int) :
 @app.route("/" + API_VERSION + "/fables", methods=['GET'])
 def list_all_fables() :
     fables = db.load_all_fables_from_database()
-    return json.dumps(fables)
+
+    response = Response(json.dumps(fables))
+    response.headers.set('Content-Type', 'application/json')
+    
+    return response
 
 # POST /version/fables
 # Tar in en fabel som ska sparas i databasen

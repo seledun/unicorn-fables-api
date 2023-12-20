@@ -59,10 +59,16 @@ def load_all_fables_from_database() -> list :
     fables = cursor.fetchall()
     cursor.close()
 
-    fable_list = {}
+    fable_list = []
 
     for fable in fables :
-        fable_list.update({fable[0] : {"id": fable[0], "votes": fable[1], "text": fable[2], "name": fable[3], "unicorn": fable[4]}})
+        fable_list.append({
+                "id" : fable[0],
+                "votes": fable[1], 
+                "text": fable[2], 
+                "name": fable[3], 
+                "unicorn": fable[4]
+            })
  
     print(fables)
     return fable_list
