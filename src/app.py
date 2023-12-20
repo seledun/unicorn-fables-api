@@ -1,4 +1,3 @@
-import keys
 import requests
 import json
 import random
