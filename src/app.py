@@ -6,6 +6,7 @@ from store.Unicorn import Unicorn
 from store.Fable import Fable
 from store.Location import Location
 from flask import Flask
+from flask import request
 
 import store.databaseHelper as db
 
@@ -35,9 +36,12 @@ def get_unicorn(id: int) :
     return unicorn
 
 # GET /version/fables
+# 1. Loads all fables from the database
+# 2. Returns a list of fables as a JSON object
 @app.route("/" + API_VERSION + "/fables", methods=['GET'])
 def list_all_fables() :
-    return
+    fables = db.load_all_fables_from_database()
+    return json.dumps(fables)
 
 # POST /version/fables
 # Tar in en fabel som ska sparas i databasen
@@ -50,6 +54,13 @@ def list_all_fables() :
 # 4. Spara fabeln i vår databas
 @app.route("/" + API_VERSION + "/fables", methods=['POST'])
 def submit_fable() :
+    data = request.get_json() # request-body
+    unicorn_id = data.get("unicorn")
+
+    unicorn = json.loads(fetch_specific_unicorn(unicorn_id))
+
+    # Unicorn struct?
+
     return
 
 # GET /version/fables/<int:id>
@@ -71,7 +82,6 @@ def update_fable(int: id) :
     return
 
 def fetch_unicorns() -> list[Unicorn]:
-
     unicorns = []
     response = requests.get("http://unicorns.idioti.se/", headers={"Accept": "application/json"})
 
