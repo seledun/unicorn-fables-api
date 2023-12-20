@@ -1,5 +1,6 @@
 from .Fable import Fable
 from .Unicorn import Unicorn
+
 import sqlite3
 
 # Connection to sqlite3
@@ -53,6 +54,24 @@ def save_unicorn_to_database(unicorn: Unicorn) :
 # Loads all fables from database
 def load_all_fables_from_database() -> list :
     c = connect_to_database()
-    c.execute('SELECT * FROM fables')
-    fables = c.fetchall()
-    return fables
+    cursor = c.cursor()
+    cursor.execute('SELECT * FROM fables')
+    fables = cursor.fetchall()
+    cursor.close()
+
+    fable_list = {}
+
+    for fable in fables :
+        fable_list.update({fable[0] : {"id": fable[0], "votes": fable[1], "text": fable[2], "name": fable[3], "unicorn": fable[4]}})
+ 
+    print(fables)
+    return fable_list
+
+# Update fable in database
+def update_fable(fable: Fable) :
+    conn = connect_to_database()
+    c = conn.cursor()
+    c.execute('UPDATE fables SET votes = ? WHERE id = ?', (fable.votes, fable.uuid))
+    conn.commit()
+    c.close()
+    return
