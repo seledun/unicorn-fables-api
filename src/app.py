@@ -12,11 +12,7 @@ app = Flask(__name__)
 # GET /version/unicorns
 @app.route("/" + API_VERSION + "/unicorns", methods=['GET'])
 def list_all_unicorns() :
-    response = requests.get("http://unicorns.idioti.se", headers={"Accept": "application/json"})
-    modified_response = [] 
-    modified_response(json.dump(response.json().get("id"), response.json().get("name"))) 
-
-    return modified_response
+    return list_unicorns()
 
 # POST /version/unicorns
 @app.route("/" + API_VERSION + "/unicorns", methods=['POST'])
@@ -138,7 +134,7 @@ def build_a_unicorn(unicorn_parts: json) -> Unicorn:
     
     return unicorn
 
-def list_of_unicorns() -> []:
+def list_unicorns() -> []:
     response = requests.get("http://unicorns.idioti.se", headers={"Accept": "application/json"})
     modified_response = [] 
 
@@ -150,5 +146,3 @@ def list_of_unicorns() -> []:
         modified_response.append(json.dumps({"id": unicorn_id, "name": unicorn_name}))
 
     return modified_response
-
-print(list_of_unicorns())
