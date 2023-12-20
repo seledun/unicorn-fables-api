@@ -1,8 +1,8 @@
-import keys
 import requests
 import json
 import random
 from store.Unicorn import Unicorn
+from store.Location import Location
 from flask import Flask
 
 API_VERSION = "0.0.1"
@@ -52,9 +52,9 @@ def update_fable() :
 
 
 def fetch_unicorns() -> list[Unicorn]:
-    
+
     unicorns = []
-    response = requests.get("http://unicorns.idioti.se", headers={"Accept": "application/json"})
+    response = requests.get("http://unicorns.idioti.se/", headers={"Accept": "application/json"})
 
     lenght = len(json.loads(response.text)) 
 
@@ -71,10 +71,28 @@ def fetch_unicorns() -> list[Unicorn]:
         random_number = random.choice(number_of_unicorns)
         number_of_unicorns.remove(random_number)
         random_unicorn_id = response.json()[random_number].get("id")
-        unicorn = requests.get("http://unicorns.idioti.se/" + str(random_unicorn_id), headers={"Accept": "application/json"})
-        unicorns.append(unicorn.json())
+        unicorn_response = requests.get("http://unicorns.idioti.se/" + str(random_unicorn_id), headers={"Accept": "application/json"})
+
+
+        location = Location(unicorn_response.json().get("spottedWhere").get("name"), 
+                            unicorn_response.json().get("spottedWhere").get("lat"),
+                            unicorn_response.json().get("spottedWhere").get("lon"))
+
+        unicorn = Unicorn(unicorn_response.json().get("id"), 
+                          unicorn_response.json().get("image"), 
+                          unicorn_response.json().get("name"), 
+                          unicorn_response.json().get("spottedWhen"), 
+                          unicorn_response.json().get("description"), 
+                          unicorn_response.json().get("reportedBy"),
+                          location)
+
+        unicorns.append(unicorn)
         count += 1
 
     return unicorns
-    
-print(fetch_unicorns())
+
+
+unicorns = fetch_unicorns()
+
+for unicorn in unicorns:
+   print(unicorn.__str__())

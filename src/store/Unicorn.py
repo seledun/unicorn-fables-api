@@ -1,4 +1,4 @@
-import Location
+from .Location import Location
 
 class Unicorn :
     
@@ -20,3 +20,6 @@ class Unicorn :
         self.spotted_when = spotted_when
         self.reported_by = reported_by
         self.description = description
+
+    def __str__(self) -> str:
+        return f"Unicorn: {self.name} ({self.uuid}) ({self.spotted_when}) ({self.description}) ({self.reported_by}) ({self.spotted_where.__str__()}) ({self.image})\n"
