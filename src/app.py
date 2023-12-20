@@ -1,9 +1,13 @@
 import requests
 import json
 import random
+
 from store.Unicorn import Unicorn
+from store.Fable import Fable
 from store.Location import Location
 from flask import Flask
+
+import store.databaseHelper as db
 
 API_VERSION = "0.0.1"
 
@@ -36,21 +40,35 @@ def list_all_fables() :
     return
 
 # POST /version/fables
+# Tar in en fabel som ska sparas i databasen
+# {text, name, unicorn_id}
+#
+# 1. Hämta enhörning från Johans databas
+# 1.1. Skapa en lokal enhörning kopia av Enhörningen för fabeln m. attributen (uuid, namn, desc, image)
+# 2. Generera ett random UUID för enhörningskopian (vill vi använda Johans enhörnings-ID?) och fabeln
+# 3. Spara enhörningskopian i vår databas
+# 4. Spara fabeln i vår databas
 @app.route("/" + API_VERSION + "/fables", methods=['POST'])
 def submit_fable() :
     return
 
 # GET /version/fables/<int:id>
+# 1. Hämta en fabel från databasen
+# 2. Returnera fabeln som ett JSON-objekt
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['GET'])
 def get_fable() :
-    return
+    fable = db.load_fable_from_database(id)
+    return json.dumps(fable)
 
 # PUT /version/fables/<int:id>
+# 1. Ta in ett JSON-objekt via request body
+# 2. Uppdatera fabeln i databasen (troligtvis updatera votes med +1 för att få vårat PUT-verb)
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['PUT'])
-def update_fable() :
+def update_fable(int: id) :
+    fable: Fable = db.load_fable_from_database(id)
+    fable.votes = fable.votes + 1
+    db.update_fable(fable)
     return
-
-
 
 def fetch_unicorns() -> list[Unicorn]:
 

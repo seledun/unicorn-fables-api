@@ -1,5 +1,5 @@
-import Fable
-import Unicorn
+from .Fable import Fable
+from .Unicorn import Unicorn
 import sqlite3
 
 # Connection to sqlite3
