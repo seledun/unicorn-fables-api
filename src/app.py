@@ -32,8 +32,9 @@ CORS(app)
 # GET /version/unicorns
 @app.route("/" + API_VERSION + "/unicorns", methods=['GET'])
 def list_all_unicorns() :
-   
-    return list_unicorns()
+    resp = Response(json.dumps(list_unicorns()))
+    resp.headers.set('Content-Type', 'application/json')
+    return resp
 
 # POST /version/unicorns
 @app.route("/" + API_VERSION + "/unicorns", methods=['POST'])
@@ -108,10 +109,6 @@ def submit_fable() :
         fable_text = data.get("text") # Tar vi in fabeltexten eller genererar vi den här?
         fable_unicorn = unicorn_id # assuming Johan has unique UUIDs for unicorns
 
-        
-
-
-
     unicorn = json.loads(fetch_specific_unicorn(unicorn_id))
 
     # Unicorn struct?
@@ -124,7 +121,10 @@ def submit_fable() :
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['GET'])
 def get_fable(id: int) :
     fable = db.load_fable_from_database(id)
-    return json.dumps(fable)
+    response = Response(json.dumps(fable))
+    response.content_type = "application/json"
+
+    return response
 
 # PUT /version/fables/<int:id>
 # 1. Ta in ett JSON-objekt via request body
@@ -233,7 +233,7 @@ def list_unicorns() -> []:
     for i in range(0, length):
         unicorn_id = response.json()[i].get("id")
         unicorn_name = response.json()[i].get("name")
-        modified_response.append(({"id": unicorn_id, "name": unicorn_name}))
+        modified_response.append({"id": unicorn_id, "name": unicorn_name})
 
     return json.dumps(modified_response)
 
