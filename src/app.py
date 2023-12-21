@@ -1,11 +1,27 @@
 import requests
-import json
 import random
+import json
+
 from store.Unicorn import Unicorn
+from store.Fable import Fable
 from store.Location import Location
+from flask import request
 from flask import Flask
+from flask import Response
+
+import store.databaseHelper as db
 
 API_VERSION = "0.0.1"
+
+FABLE_PREFIXES = {
+    "Den magiska berättelsen om",
+    "Den fantastiska berättelsen om",
+    "Den underbara berättelsen om",
+    "Myten om den magiska",
+    "Fabeln om den kluriga",
+    "Sagan om den vackra",
+    "Sagan om den mystiska"
+}
 
 app = Flask(__name__)
 
@@ -27,29 +43,82 @@ def get_unicorn(id: int) :
     return unicorn
 
 # GET /version/fables
+# 1. Loads all fables from the database
+# 2. Returns a list of fables as a JSON object
 @app.route("/" + API_VERSION + "/fables", methods=['GET'])
 def list_all_fables() :
-    return
+    fables = db.load_all_fables_from_database()
+
+    response = Response(json.dumps(fables))
+    response.headers.set('Content-Type', 'application/json')
+    
+    return response
 
 # POST /version/fables
+# Tar in en fabel som ska sparas i databasen
+# {text, name, unicorn_id}
+#
+# 1. Hämta enhörning från Johans databas
+# 1.1. Skapa en lokal enhörning kopia av Enhörningen för fabeln m. attributen (uuid, namn, desc, image)
+# 2. Generera ett random UUID för enhörningskopian (vill vi använda Johans enhörnings-ID?) och fabeln
+# 3. Spara enhörningskopian i vår databas
+# 4. Spara fabeln i vår databas
 @app.route("/" + API_VERSION + "/fables", methods=['POST'])
 def submit_fable() :
+    data = request.get_json() # request-body
+    unicorn_id = data.get("unicorn")
+
+    response = requests.get("http://unicorns.idioti.se/", headers={"Accept": "application/json"})
+    
+    if (response.status_code == 200) :
+        
+        response_json = json.loads(response.text)
+        
+        unicorn_uuid = random.randint(0, 100000) # 🤞 no collisions
+        fable_uuid = random.randint(0, 100000) # 🤞 no collisions
+
+        # Build a unicorn object
+        unicorn = build_a_unicorn(response_json)
+        unicorn.uuid = unicorn_uuid
+
+        # Save local copy of unicorn to database
+        db.save_unicorn_to_database(unicorn)
+
+        # Generate a random fable title using the set prefixes
+        fable_name = random.choice(FABLE_PREFIXES) + " " + unicorn.name
+        fable_votes = 0
+        fable_text = data.get("text") # Tar vi in fabeltexten eller genererar vi den här?
+        fable_unicorn = unicorn_id # assuming Johan has unique UUIDs for unicorns
+
+        
+
+
+
+    unicorn = json.loads(fetch_specific_unicorn(unicorn_id))
+
+    # Unicorn struct?
+
     return
 
 # GET /version/fables/<int:id>
+# 1. Hämta en fabel från databasen
+# 2. Returnera fabeln som ett JSON-objekt
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['GET'])
 def get_fable() :
-    return
+    fable = db.load_fable_from_database(id)
+    return json.dumps(fable)
 
 # PUT /version/fables/<int:id>
+# 1. Ta in ett JSON-objekt via request body
+# 2. Uppdatera fabeln i databasen (troligtvis updatera votes med +1 för att få vårat PUT-verb)
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['PUT'])
-def update_fable() :
+def update_fable(int: id) :
+    fable: Fable = db.load_fable_from_database(id)
+    fable.votes = fable.votes + 1
+    db.update_fable(fable)
     return
 
-
-
 def fetch_unicorns() -> list[Unicorn]:
-
     unicorns = []
     response = requests.get("http://unicorns.idioti.se/", headers={"Accept": "application/json"})
 
@@ -120,24 +189,27 @@ def fetch_specific_unicorn(id: int) -> Unicorn:
 
 def build_a_unicorn(unicorn_parts: json) -> Unicorn:
 
-    location = Location(unicorn_parts.json().get("spottedWhere").get("name"), 
-                            unicorn_parts.json().get("spottedWhere").get("lat"),
-                            unicorn_parts.json().get("spottedWhere").get("lon"))
+    location = Location (
+        unicorn_parts.json().get("spottedWhere").get("name"), 
+        unicorn_parts.json().get("spottedWhere").get("lat"),
+        unicorn_parts.json().get("spottedWhere").get("lon")
+        )
 
-    unicorn = Unicorn(unicorn_parts.json().get("id"), 
-                          unicorn_parts.json().get("image"), 
-                          unicorn_parts.json().get("name"), 
-                          unicorn_parts.json().get("spottedWhen"), 
-                          unicorn_parts.json().get("description"), 
-                          unicorn_parts.json().get("reportedBy"),
-                          location)
+    unicorn = Unicorn (
+        unicorn_parts.json().get("id"), 
+        unicorn_parts.json().get("image"), 
+        unicorn_parts.json().get("name"), 
+        unicorn_parts.json().get("spottedWhen"), 
+        unicorn_parts.json().get("description"), 
+        unicorn_parts.json().get("reportedBy"),
+        location
+        )
     
     return unicorn
 
 def list_unicorns() -> []:
     response = requests.get("http://unicorns.idioti.se", headers={"Accept": "application/json"})
     modified_response = [] 
-
 
     lenght = len(json.loads(response.text))
     for i in range(0, lenght):
@@ -146,3 +218,15 @@ def list_unicorns() -> []:
         modified_response.append(json.dumps({"id": unicorn_id, "name": unicorn_name}))
 
     return modified_response
+
+print(list_of_unicorns())
+
+# Test
+def fable_test () :
+    fable1 = Fable(1, 0, "This is a fable", "Fable 1", 1)
+    fable2 = Fable(2, 0, "This is a fable", "Fable 2", 2)
+    fable3 = Fable(3, 0, "This is a fable", "Fable 3", 3)
+
+    db.save_fable_to_database(fable1)
+    db.save_fable_to_database(fable2)
+    db.save_fable_to_database(fable3)
