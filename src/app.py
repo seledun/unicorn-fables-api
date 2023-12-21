@@ -9,6 +9,8 @@ from flask import request
 from flask import Flask
 from flask import Response
 
+from flask_cors import CORS
+
 import store.databaseHelper as db
 
 API_VERSION = "0.0.1"
@@ -24,6 +26,7 @@ FABLE_PREFIXES = {
 }
 
 app = Flask(__name__)
+CORS(app)
 
 # GET /version/unicorns
 @app.route("/" + API_VERSION + "/unicorns", methods=['GET'])
@@ -218,8 +221,6 @@ def list_unicorns() -> []:
         modified_response.append(json.dumps({"id": unicorn_id, "name": unicorn_name}))
 
     return modified_response
-
-print(list_of_unicorns())
 
 # Test
 def fable_test () :
