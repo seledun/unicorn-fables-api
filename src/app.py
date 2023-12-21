@@ -214,13 +214,13 @@ def list_unicorns() -> []:
     response = requests.get("http://unicorns.idioti.se", headers={"Accept": "application/json"})
     modified_response = [] 
 
-    lenght = len(json.loads(response.text))
-    for i in range(0, lenght):
+    length = len(json.loads(response.text))
+    for i in range(0, length):
         unicorn_id = response.json()[i].get("id")
         unicorn_name = response.json()[i].get("name")
-        modified_response.append(json.dumps({"id": unicorn_id, "name": unicorn_name}))
+        modified_response.append(({"id": unicorn_id, "name": unicorn_name}))
 
-    return modified_response
+    return json.dumps(modified_response)
 
 # Test
 def fable_test () :

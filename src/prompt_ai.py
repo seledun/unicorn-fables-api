@@ -39,6 +39,3 @@ response = completion.choices[0].message.content
 # Print the response JSON object
 print(response)
 print(type(response))
-
-
-# print(completion.choices[0].message.content)
