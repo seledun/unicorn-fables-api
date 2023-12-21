@@ -109,7 +109,10 @@ def submit_fable() :
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['GET'])
 def get_fable(id: int) :
     fable = db.load_fable_from_database(id)
-    return json.dumps(fable)
+    response = Response(json.dumps(fable))
+    response.content_type = "application/json"
+
+    return response
 
 # PUT /version/fables/<int:id>
 # 1. Ta in ett JSON-objekt via request body
