@@ -107,7 +107,7 @@ def submit_fable() :
 # 1. Hämta en fabel från databasen
 # 2. Returnera fabeln som ett JSON-objekt
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['GET'])
-def get_fable() :
+def get_fable(id: int) :
     fable = db.load_fable_from_database(id)
     return json.dumps(fable)
 
@@ -115,7 +115,7 @@ def get_fable() :
 # 1. Ta in ett JSON-objekt via request body
 # 2. Uppdatera fabeln i databasen (troligtvis updatera votes med +1 för att få vårat PUT-verb)
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['PUT'])
-def update_fable(int: id) :
+def update_fable(id: int) :
     fable: Fable = db.load_fable_from_database(id)
     fable.votes = fable.votes + 1
     db.update_fable(fable)
