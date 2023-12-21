@@ -31,8 +31,9 @@ CORS(app)
 # GET /version/unicorns
 @app.route("/" + API_VERSION + "/unicorns", methods=['GET'])
 def list_all_unicorns() :
-   
-    return list_unicorns()
+    resp = Response(json.dumps(list_unicorns()))
+    resp.headers.set('Content-Type', 'application/json')
+    return resp
 
 # POST /version/unicorns
 @app.route("/" + API_VERSION + "/unicorns", methods=['POST'])
@@ -92,10 +93,6 @@ def submit_fable() :
         fable_votes = 0
         fable_text = data.get("text") # Tar vi in fabeltexten eller genererar vi den här?
         fable_unicorn = unicorn_id # assuming Johan has unique UUIDs for unicorns
-
-        
-
-
 
     unicorn = json.loads(fetch_specific_unicorn(unicorn_id))
 
@@ -221,7 +218,7 @@ def list_unicorns() -> []:
     for i in range(0, lenght):
         unicorn_id = response.json()[i].get("id")
         unicorn_name = response.json()[i].get("name")
-        modified_response.append(json.dumps({"id": unicorn_id, "name": unicorn_name}))
+        modified_response.append({"id": unicorn_id, "name": unicorn_name})
 
     return modified_response
 
