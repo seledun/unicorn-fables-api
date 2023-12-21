@@ -1,6 +1,7 @@
 import requests
 import random
 import json
+import prompt_ai
 
 from store.Unicorn import Unicorn
 from store.Fable import Fable
@@ -44,6 +45,20 @@ def submit_unicorn() :
 def get_unicorn(id: int) :
    
     return fetch_specific_unicorn_as_json(id)
+
+# GET /version/fables/generator
+# 1. Returns a new fable
+@app.route("/" + API_VERSION + "/fables/generator", methods=['GET'])
+def generate_fable(unicorn: Unicorn) : 
+    print("Inuti generate_fable!")
+    fable = prompt_ai.get_fable_from_openai(unicorn)
+    
+    response = Response(json.dumps(fable))
+    response.headers.set('Content-Type', 'application/json')
+    
+    return response
+    
+
 
 # GET /version/fables
 # 1. Loads all fables from the database
@@ -231,3 +246,10 @@ def fable_test () :
     db.save_fable_to_database(fable1)
     db.save_fable_to_database(fable2)
     db.save_fable_to_database(fable3)
+
+
+
+
+
+
+
