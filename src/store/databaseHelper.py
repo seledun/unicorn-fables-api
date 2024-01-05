@@ -46,9 +46,9 @@ def save_unicorn_to_database(unicorn: Unicorn) :
     unicorn_uuid = unicorn.uuid
     unicorn_image = unicorn.image
     unicorn_name = unicorn.name
-    unicorn_place_name = unicorn.place_name
-    unicorn_place_lon = unicorn.place_lon
-    unicorn_place_lat = unicorn.place_lat
+    unicorn_place_name = unicorn.spotted_where.name
+    unicorn_place_lon = unicorn.spotted_where.lon
+    unicorn_place_lat = unicorn.spotted_where.lat
     unicorn_spotted_when = unicorn.spotted_when
 
     conn = connect_to_database()
