@@ -73,20 +73,24 @@ def list_all_fables() :
 # 4. Spara fabeln i vår databas
 @app.route("/" + API_VERSION + "/fables", methods=['POST'])
 def submit_fable() :
-    data = request.get_json() # request-body
-    unicorn_id = data.get("unicorn")
 
-    response = requests.get("http://unicorns.idioti.se/", headers={"Accept": "application/json"})
+    data = request.get_json() # request-body
+
+    unicorn_id = data.get("id")
+    mood = data.get("mood")
+
+    unicorn = fetch_specific_unicorn_as_json(unicorn_id)
+    # här ska vi hämta en fabel från chatgpt
     
+    # Här ska vi kolla statuscodes för båda förfrågningarna,
+    # tror vi behöver se till att fetch_specific_unicorn returnerar false vid fel
     if (response.status_code == 200) :
-        
-        response_json = json.loads(response.text)
         
         unicorn_uuid = random.randint(0, 100000) # 🤞 no collisions
         fable_uuid = random.randint(0, 100000) # 🤞 no collisions
 
         # Build a unicorn object
-        unicorn = build_a_unicorn(response_json)
+        unicorn = build_a_unicorn(unicorn)
         unicorn.uuid = unicorn_uuid
 
         # Save local copy of unicorn to database
@@ -95,13 +99,13 @@ def submit_fable() :
         # Generate a random fable title using the set prefixes
         fable_name = random.choice(FABLE_PREFIXES) + " " + unicorn.name
         fable_votes = 0
-        fable_text = data.get("text") # Tar vi in fabeltexten eller genererar vi den här?
+        fable_text = data.get("text") # HÄR STOPPAR VI IN SVARET FRÅN CHATGPT
         fable_unicorn = unicorn_id # assuming Johan has unique UUIDs for unicorns
 
-    unicorn = json.loads(fetch_specific_unicorn(unicorn_id))
+        fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn)
+        db.save_fable_to_database(fable)
 
-    # Unicorn struct?
-    
+        
     # Send a specific unicorn and request a fable
     fable = prompt_ai.get_fable_from_openai(unicorn)
     
