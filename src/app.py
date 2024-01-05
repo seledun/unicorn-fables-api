@@ -103,7 +103,7 @@ def submit_fable() :
         fable_name = random.choice(list(FABLE_PREFIXES)) + " " + unicorn.name + "en"
         fable_votes = 0
         fable_text = generated_fable
-        fable_unicorn = unicorn_id # 🤞 assuming Johan has unique UUIDs for unicorns
+        fable_unicorn = unicorn_uuid # For relational table
 
         fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn)
         db.save_fable_to_database(fable)
@@ -129,10 +129,10 @@ def get_fable(id: int) :
 # 2. Uppdatera fabeln i databasen (troligtvis updatera votes med +1 för att få vårat PUT-verb)
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['PUT'])
 def update_fable(id: int) :
-    fable: Fable = db.load_fable_from_database(id)
+    fable : Fable = db.load_fable_from_database(id)
     fable.votes = fable.votes + 1
     db.update_fable(fable)
-    return
+    return Response(status=200)
 
 def fetch_unicorns() -> list[Unicorn]:
     unicorns = []

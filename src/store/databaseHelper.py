@@ -33,13 +33,8 @@ def load_fable_from_database(fable_id: int) -> Fable :
     c.execute('SELECT * FROM fables WHERE id = ?', (fable_id,))
     fable = c.fetchone()
 
-    return {
-            "id" : fable[0],
-            "votes": fable[1], 
-            "text": fable[2], 
-            "name": fable[3], 
-            "unicorn": fable[4]
-        }
+    fable = Fable(fable[0], fable[1], fable[2], fable[3], fable[4])
+    return fable
 
 # Save a unicorn to the database
 def save_unicorn_to_database(unicorn: Unicorn) :
