@@ -97,10 +97,11 @@ def submit_fable() :
         unicorn.uuid = unicorn_uuid
 
         # Send a specific unicorn and request a fable
-        generated_fable = prompt_ai.get_fable_from_openai(unicorn, mood)
+        generated_fable = prompt_ai.get_fable_from_openai(temp_unicorn, mood)
         
         response = Response(json.dumps(generated_fable))
         response.headers.set('Content-Type', 'application/json')
+        print(generated_fable)        
 
         # Save local copy of unicorn to database
         db.save_unicorn_to_database(unicorn)
@@ -249,3 +250,4 @@ def fable_test () :
     db.save_fable_to_database(fable1)
     db.save_fable_to_database(fable2)
     db.save_fable_to_database(fable3)
+
