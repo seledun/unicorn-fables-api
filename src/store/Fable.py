@@ -14,3 +14,12 @@ class Fable :
         self.text = text
         self.name = name
         self.unicorn = unicorn
+
+    def dictify(self) -> dict :
+        return {
+            "uuid" : self.uuid,
+            "votes" : self.votes,
+            "text" : self.text,
+            "name" : self.name,
+            "unicorn" : self.unicorn
+        }

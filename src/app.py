@@ -47,18 +47,7 @@ def get_unicorn(id: int) :
    
     return fetch_specific_unicorn_as_json(id)
 
-# GET /version/fables/generator
-# 1. Returns a new fable
-@app.route("/" + API_VERSION + "/fables/generator", methods=['GET'])
-def generate_fable(unicorn: Unicorn) : 
-    print("Inuti generate_fable!")
-    fable = prompt_ai.get_fable_from_openai(unicorn)
-    
-    response = Response(json.dumps(fable))
-    response.headers.set('Content-Type', 'application/json')
-    
-    return response
-    
+
 
 
 # GET /version/fables
@@ -84,36 +73,45 @@ def list_all_fables() :
 # 4. Spara fabeln i vår databas
 @app.route("/" + API_VERSION + "/fables", methods=['POST'])
 def submit_fable() :
-    data = request.get_json() # request-body
-    unicorn_id = data.get("unicorn")
 
-    response = requests.get("http://unicorns.idioti.se/", headers={"Accept": "application/json"})
-    
-    if (response.status_code == 200) :
-        
-        response_json = json.loads(response.text)
-        
+    print("hello?")
+
+    data = request.get_json() # request-body
+
+    unicorn_id = data.get("id")
+    mood = data.get("mood")
+
+    temp_unicorn = fetch_specific_unicorn_as_json(unicorn_id)
+
+    # Här ska vi kolla statuscodes för båda förfrågningarna,
+    # tror vi behöver se till att fetch_specific_unicorn returnerar false vid fel
+    if (temp_unicorn != None) :
         unicorn_uuid = random.randint(0, 100000) # 🤞 no collisions
         fable_uuid = random.randint(0, 100000) # 🤞 no collisions
 
         # Build a unicorn object
-        unicorn = build_a_unicorn(response_json)
+        unicorn = build_a_unicorn(temp_unicorn)
         unicorn.uuid = unicorn_uuid
 
+        # Send a specific unicorn and request a fable
+        generated_fable = prompt_ai.get_fable_from_openai(temp_unicorn, mood)
+        
         # Save local copy of unicorn to database
         db.save_unicorn_to_database(unicorn)
 
         # Generate a random fable title using the set prefixes
-        fable_name = random.choice(FABLE_PREFIXES) + " " + unicorn.name
+        fable_name = random.choice(list(FABLE_PREFIXES)) + " " + unicorn.name + "en"
         fable_votes = 0
-        fable_text = data.get("text") # Tar vi in fabeltexten eller genererar vi den här?
-        fable_unicorn = unicorn_id # assuming Johan has unique UUIDs for unicorns
+        fable_text = generated_fable
+        fable_unicorn = unicorn_id # 🤞 assuming Johan has unique UUIDs for unicorns
 
-    unicorn = json.loads(fetch_specific_unicorn(unicorn_id))
+        fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn)
+        db.save_fable_to_database(fable)
+       
+        response = Response(json.dumps(fable.dictify()))
+        response.headers.set('Content-Type', 'application/json')
 
-    # Unicorn struct?
-
-    return
+    return response
 
 # GET /version/fables/<int:id>
 # 1. Hämta en fabel från databasen
@@ -208,18 +206,18 @@ def fetch_specific_unicorn(id: int) -> Unicorn:
 def build_a_unicorn(unicorn_parts: json) -> Unicorn:
 
     location = Location (
-        unicorn_parts.json().get("spottedWhere").get("name"), 
-        unicorn_parts.json().get("spottedWhere").get("lat"),
-        unicorn_parts.json().get("spottedWhere").get("lon")
+        unicorn_parts.get("spottedWhere").get("name"), 
+        unicorn_parts.get("spottedWhere").get("lat"),
+        unicorn_parts.get("spottedWhere").get("lon")
         )
 
     unicorn = Unicorn (
-        unicorn_parts.json().get("id"), 
-        unicorn_parts.json().get("image"), 
-        unicorn_parts.json().get("name"), 
-        unicorn_parts.json().get("spottedWhen"), 
-        unicorn_parts.json().get("description"), 
-        unicorn_parts.json().get("reportedBy"),
+        unicorn_parts.get("id"), 
+        unicorn_parts.get("image"), 
+        unicorn_parts.get("name"), 
+        unicorn_parts.get("spottedWhen"), 
+        unicorn_parts.get("description"), 
+        unicorn_parts.get("reportedBy"),
         location
         )
     
@@ -246,10 +244,3 @@ def fable_test () :
     db.save_fable_to_database(fable1)
     db.save_fable_to_database(fable2)
     db.save_fable_to_database(fable3)
-
-
-
-
-
-
-

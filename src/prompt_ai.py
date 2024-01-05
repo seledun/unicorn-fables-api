@@ -2,24 +2,30 @@ from openai import OpenAI
 import os
 import json
 from store.Unicorn import Unicorn 
+import keys
 
 
-def get_fable_from_openai(unicorn: json) -> json:
+def get_fable_from_openai(unicorn: json, mood : str) -> json:
   # Load the API key from the .env file
-  api_key = os.getenv("OPENAI_API_KEY")
+  # api_key = os.environ['OPENAI_API_KEY']
+  api_key = keys.OPENAI_API_KEY
 
   # Attach the API key directly to the OpenAI object / module
-  OpenAI.api_key = api_key
+  #OpenAI.api_key = api_key
 
-  client = OpenAI()
+  client = OpenAI(api_key=api_key)
 
-  # Extract the useful unicorn parts 
-  unicorn_name = unicorn.json().get("name"), 
-  location = unicorn.json().get("spottedWhere").get("name"),  
-  unicorn_description = unicorn.json().get("description"), 
-  name_of_person = unicorn.json().get("reportedBy"), # Antingen upptäckaren av enhörningen, eller användaren som matar in sitt namn
+  # Extract the useful unicorn parts
+  unicorn_name = unicorn.get("name") 
+  location = unicorn.get("spottedWhere").get("name") 
+  unicorn_description = unicorn.get("description")
+  name_of_person = unicorn.get("reportedBy") 
   
-  story_theme = "Romantic mystery"   # Lösa denna på något sätt
+  if (mood == "happy"):
+    story_theme = "light and happy"
+  elif (mood == "night"):
+    story_theme = "dark, thrilling and a bit scary"
+
   
 
 
@@ -46,3 +52,4 @@ def get_fable_from_openai(unicorn: json) -> json:
 # Print the response JSON object
 # print(response)
 # print(type(response))
+
