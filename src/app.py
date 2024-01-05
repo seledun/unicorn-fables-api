@@ -79,16 +79,11 @@ def submit_fable() :
     unicorn_id = data.get("id")
     mood = data.get("mood")
 
-    print("Inne!" + unicorn_id + mood)
-
     temp_unicorn = fetch_specific_unicorn_as_json(unicorn_id)
-    print(temp_unicorn)
-    # här ska vi hämta en fabel från chatgpt
     
     # Här ska vi kolla statuscodes för båda förfrågningarna,
     # tror vi behöver se till att fetch_specific_unicorn returnerar false vid fel
     if (temp_unicorn != None) :
-        
         unicorn_uuid = random.randint(0, 100000) # 🤞 no collisions
         fable_uuid = random.randint(0, 100000) # 🤞 no collisions
 
@@ -99,24 +94,21 @@ def submit_fable() :
         # Send a specific unicorn and request a fable
         generated_fable = prompt_ai.get_fable_from_openai(temp_unicorn, mood)
         
-        response = Response(json.dumps(generated_fable))
-        response.headers.set('Content-Type', 'application/json')
-        print(generated_fable)        
-
         # Save local copy of unicorn to database
         db.save_unicorn_to_database(unicorn)
 
         # Generate a random fable title using the set prefixes
-        fable_name = random.choice(FABLE_PREFIXES) + " " + unicorn.name
+        fable_name = random.choice(list(FABLE_PREFIXES)) + " " + unicorn.name
         fable_votes = 0
-        fable_text = data.get(generated_fable) # HÄR STOPPAR VI IN SVARET FRÅN CHATGPT
-        fable_unicorn = unicorn_id # assuming Johan has unique UUIDs for unicorns
+        fable_text = generated_fable
+        fable_unicorn = unicorn_id # 🤞 assuming Johan has unique UUIDs for unicorns
 
         fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn)
         db.save_fable_to_database(fable)
-
-        
        
+        response = Response(json.dumps(fable.dictify()))
+        response.headers.set('Content-Type', 'application/json')
+
     return response
 
 # GET /version/fables/<int:id>
@@ -250,4 +242,3 @@ def fable_test () :
     db.save_fable_to_database(fable1)
     db.save_fable_to_database(fable2)
     db.save_fable_to_database(fable3)
-
