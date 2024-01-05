@@ -132,7 +132,7 @@ def update_fable(id: int) :
     fable : Fable = db.load_fable_from_database(id)
     fable.votes = fable.votes + 1
     db.update_fable(fable)
-    return Response(status=200)
+    return Response(status=204) # 204 no content
 
 def fetch_unicorns() -> list[Unicorn]:
     unicorns = []
