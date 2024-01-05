@@ -119,7 +119,7 @@ def submit_fable() :
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['GET'])
 def get_fable(id: int) :
     fable = db.load_fable_from_database(id)
-    response = Response(json.dumps(fable))
+    response = Response(json.dumps(fable.dictify()))
     response.content_type = "application/json"
 
     return response
