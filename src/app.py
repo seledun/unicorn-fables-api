@@ -47,18 +47,7 @@ def get_unicorn(id: int) :
    
     return fetch_specific_unicorn_as_json(id)
 
-# GET /version/fables/generator
-# 1. Returns a new fable
-@app.route("/" + API_VERSION + "/fables/generator", methods=['GET'])
-def generate_fable(unicorn: Unicorn) : 
-    print("Inuti generate_fable!")
-    fable = prompt_ai.get_fable_from_openai(unicorn)
-    
-    response = Response(json.dumps(fable))
-    response.headers.set('Content-Type', 'application/json')
-    
-    return response
-    
+
 
 
 # GET /version/fables
@@ -112,8 +101,14 @@ def submit_fable() :
     unicorn = json.loads(fetch_specific_unicorn(unicorn_id))
 
     # Unicorn struct?
-
-    return
+    
+    # Send a specific unicorn and request a fable
+    fable = prompt_ai.get_fable_from_openai(unicorn)
+    
+    response = Response(json.dumps(fable))
+    response.headers.set('Content-Type', 'application/json')
+    
+    return response
 
 # GET /version/fables/<int:id>
 # 1. Hämta en fabel från databasen
