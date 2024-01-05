@@ -14,10 +14,10 @@ def get_fable_from_openai(unicorn: json, mood : str) -> json:
   client = OpenAI()
 
   # Extract the useful unicorn parts - EV TA BORT .json !!!!!!!!!
-  unicorn_name = unicorn.json().get("name"), 
-  location = unicorn.json().get("spottedWhere").get("name"),  
-  unicorn_description = unicorn.json().get("description"), 
-  name_of_person = unicorn.json().get("reportedBy"), # Antingen upptäckaren av enhörningen, eller användaren som matar in sitt namn
+  unicorn_name = unicorn.get("name") 
+  location = unicorn.get("spottedWhere").get("name") 
+  unicorn_description = unicorn.get("description")
+  name_of_person = unicorn.get("reportedBy") # Antingen upptäckaren av enhörningen, eller användaren som matar in sitt namn
   
   if (mood == "happy"):
     story_theme = "light and happy"
@@ -50,3 +50,4 @@ def get_fable_from_openai(unicorn: json, mood : str) -> json:
 # Print the response JSON object
 # print(response)
 # print(type(response))
+
