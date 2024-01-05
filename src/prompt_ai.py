@@ -2,16 +2,18 @@ from openai import OpenAI
 import os
 import json
 from store.Unicorn import Unicorn 
+import keys
 
 
 def get_fable_from_openai(unicorn: json, mood : str) -> json:
   # Load the API key from the .env file
-  api_key = os.getenv("OPENAI_API_KEY")
+  # api_key = os.environ['OPENAI_API_KEY']
+  api_key = keys.OPENAI_API_KEY
 
   # Attach the API key directly to the OpenAI object / module
-  OpenAI.api_key = api_key
+  #OpenAI.api_key = api_key
 
-  client = OpenAI()
+  client = OpenAI(api_key=api_key)
 
   # Extract the useful unicorn parts - EV TA BORT .json !!!!!!!!!
   unicorn_name = unicorn.get("name") 

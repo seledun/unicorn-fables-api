@@ -74,13 +74,15 @@ def list_all_fables() :
 @app.route("/" + API_VERSION + "/fables", methods=['POST'])
 def submit_fable() :
 
+    print("hello?")
+
     data = request.get_json() # request-body
 
     unicorn_id = data.get("id")
     mood = data.get("mood")
 
     temp_unicorn = fetch_specific_unicorn_as_json(unicorn_id)
-    
+
     # Här ska vi kolla statuscodes för båda förfrågningarna,
     # tror vi behöver se till att fetch_specific_unicorn returnerar false vid fel
     if (temp_unicorn != None) :
@@ -98,7 +100,7 @@ def submit_fable() :
         db.save_unicorn_to_database(unicorn)
 
         # Generate a random fable title using the set prefixes
-        fable_name = random.choice(list(FABLE_PREFIXES)) + " " + unicorn.name
+        fable_name = random.choice(list(FABLE_PREFIXES)) + " " + unicorn.name + "en"
         fable_votes = 0
         fable_text = generated_fable
         fable_unicorn = unicorn_id # 🤞 assuming Johan has unique UUIDs for unicorns
