@@ -15,11 +15,11 @@ def get_fable_from_openai(unicorn: json, mood : str) -> json:
 
   client = OpenAI(api_key=api_key)
 
-  # Extract the useful unicorn parts - EV TA BORT .json !!!!!!!!!
+  # Extract the useful unicorn parts
   unicorn_name = unicorn.get("name") 
   location = unicorn.get("spottedWhere").get("name") 
   unicorn_description = unicorn.get("description")
-  name_of_person = unicorn.get("reportedBy") # Antingen upptäckaren av enhörningen, eller användaren som matar in sitt namn
+  name_of_person = unicorn.get("reportedBy") 
   
   if (mood == "happy"):
     story_theme = "light and happy"
