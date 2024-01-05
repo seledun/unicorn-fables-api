@@ -87,7 +87,7 @@ def submit_fable() :
     
     # Här ska vi kolla statuscodes för båda förfrågningarna,
     # tror vi behöver se till att fetch_specific_unicorn returnerar false vid fel
-    if (response.status_code == 200) :
+    if (temp_unicorn != None) :
         
         unicorn_uuid = random.randint(0, 100000) # 🤞 no collisions
         fable_uuid = random.randint(0, 100000) # 🤞 no collisions
@@ -96,7 +96,7 @@ def submit_fable() :
         unicorn = build_a_unicorn(temp_unicorn)
         unicorn.uuid = unicorn_uuid
 
-         # Send a specific unicorn and request a fable
+        # Send a specific unicorn and request a fable
         generated_fable = prompt_ai.get_fable_from_openai(unicorn, mood)
         
         response = Response(json.dumps(generated_fable))
@@ -211,18 +211,18 @@ def fetch_specific_unicorn(id: int) -> Unicorn:
 def build_a_unicorn(unicorn_parts: json) -> Unicorn:
 
     location = Location (
-        unicorn_parts.json().get("spottedWhere").get("name"), 
-        unicorn_parts.json().get("spottedWhere").get("lat"),
-        unicorn_parts.json().get("spottedWhere").get("lon")
+        unicorn_parts.get("spottedWhere").get("name"), 
+        unicorn_parts.get("spottedWhere").get("lat"),
+        unicorn_parts.get("spottedWhere").get("lon")
         )
 
     unicorn = Unicorn (
-        unicorn_parts.json().get("id"), 
-        unicorn_parts.json().get("image"), 
-        unicorn_parts.json().get("name"), 
-        unicorn_parts.json().get("spottedWhen"), 
-        unicorn_parts.json().get("description"), 
-        unicorn_parts.json().get("reportedBy"),
+        unicorn_parts.get("id"), 
+        unicorn_parts.get("image"), 
+        unicorn_parts.get("name"), 
+        unicorn_parts.get("spottedWhen"), 
+        unicorn_parts.get("description"), 
+        unicorn_parts.get("reportedBy"),
         location
         )
     
@@ -249,10 +249,3 @@ def fable_test () :
     db.save_fable_to_database(fable1)
     db.save_fable_to_database(fable2)
     db.save_fable_to_database(fable3)
-
-
-
-
-
-
-
