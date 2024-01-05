@@ -79,7 +79,10 @@ def submit_fable() :
     unicorn_id = data.get("id")
     mood = data.get("mood")
 
-    unicorn = fetch_specific_unicorn_as_json(unicorn_id)
+    print("Inne!" + unicorn_id + mood)
+
+    temp_unicorn = fetch_specific_unicorn_as_json(unicorn_id)
+    print(temp_unicorn)
     # här ska vi hämta en fabel från chatgpt
     
     # Här ska vi kolla statuscodes för båda förfrågningarna,
@@ -90,8 +93,14 @@ def submit_fable() :
         fable_uuid = random.randint(0, 100000) # 🤞 no collisions
 
         # Build a unicorn object
-        unicorn = build_a_unicorn(unicorn)
+        unicorn = build_a_unicorn(temp_unicorn)
         unicorn.uuid = unicorn_uuid
+
+         # Send a specific unicorn and request a fable
+        generated_fable = prompt_ai.get_fable_from_openai(unicorn, mood)
+        
+        response = Response(json.dumps(generated_fable))
+        response.headers.set('Content-Type', 'application/json')
 
         # Save local copy of unicorn to database
         db.save_unicorn_to_database(unicorn)
@@ -99,19 +108,14 @@ def submit_fable() :
         # Generate a random fable title using the set prefixes
         fable_name = random.choice(FABLE_PREFIXES) + " " + unicorn.name
         fable_votes = 0
-        fable_text = data.get("text") # HÄR STOPPAR VI IN SVARET FRÅN CHATGPT
+        fable_text = data.get(generated_fable) # HÄR STOPPAR VI IN SVARET FRÅN CHATGPT
         fable_unicorn = unicorn_id # assuming Johan has unique UUIDs for unicorns
 
         fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn)
         db.save_fable_to_database(fable)
 
         
-    # Send a specific unicorn and request a fable
-    fable = prompt_ai.get_fable_from_openai(unicorn)
-    
-    response = Response(json.dumps(fable))
-    response.headers.set('Content-Type', 'application/json')
-    
+       
     return response
 
 # GET /version/fables/<int:id>

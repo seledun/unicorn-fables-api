@@ -4,7 +4,7 @@ import json
 from store.Unicorn import Unicorn 
 
 
-def get_fable_from_openai(unicorn: json) -> json:
+def get_fable_from_openai(unicorn: json, mood : str) -> json:
   # Load the API key from the .env file
   api_key = os.getenv("OPENAI_API_KEY")
 
@@ -19,7 +19,7 @@ def get_fable_from_openai(unicorn: json) -> json:
   unicorn_description = unicorn.json().get("description"), 
   name_of_person = unicorn.json().get("reportedBy"), # Antingen upptäckaren av enhörningen, eller användaren som matar in sitt namn
   
-  story_theme = "Romantic mystery"   # Lösa denna på något sätt
+  story_theme = mood   # Lösa denna på något sätt
   
 
 
