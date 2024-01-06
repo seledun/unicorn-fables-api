@@ -4,7 +4,7 @@ import json
 from store.Unicorn import Unicorn 
 import keys
 
-
+# Method to dissect unicorn and send prompt to get a fable from the OpenAI API
 def get_fable_from_openai(unicorn: json, mood : str) -> json:
   # Load the API key from the .env file
   # api_key = os.environ['OPENAI_API_KEY']
@@ -28,7 +28,7 @@ def get_fable_from_openai(unicorn: json, mood : str) -> json:
 
   
 
-
+  # Sending the prompt to the OpenAI API
   completion = client.chat.completions.create(
     model="gpt-3.5-turbo", 
     messages=[
