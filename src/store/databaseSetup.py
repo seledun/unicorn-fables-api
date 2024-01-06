@@ -1,5 +1,6 @@
 import sqlite3
 
+# Connection to sqlite3
 def connect_to_database() :
     conn = sqlite3.connect("fables.db")
     conn.text_factory = str

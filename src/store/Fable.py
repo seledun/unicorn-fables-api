@@ -15,6 +15,7 @@ class Fable :
         self.name = name
         self.unicorn = unicorn
 
+    # Convert fable object to dictionary
     def dictify(self) -> dict :
         return {
             "uuid" : self.uuid,

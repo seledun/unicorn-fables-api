@@ -71,8 +71,7 @@ def load_all_fables_from_database() -> list :
                 "name": fable[3], 
                 "unicorn": fable[4]
             })
- 
-    print(fables)
+        
     return fable_list
 
 # Update fable in database
