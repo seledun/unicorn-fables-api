@@ -73,9 +73,6 @@ def list_all_fables() :
 # 4. Spara fabeln i vår databas
 @app.route("/" + API_VERSION + "/fables", methods=['POST'])
 def submit_fable() :
-
-    print("hello?")
-
     data = request.get_json() # request-body
 
     unicorn_id = data.get("id")
