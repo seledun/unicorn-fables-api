@@ -4,11 +4,6 @@ import json
 from store.Unicorn import Unicorn 
 import keys
 
-<<<<<<< HEAD
-# Get the fable from the OpenAI API using the mood and choosen unicorn.
-=======
-# Method to dissect unicorn and send prompt to get a fable from the OpenAI API
->>>>>>> 3c22df6add5b316997d1a0150331f6e477fc6fee
 def get_fable_from_openai(unicorn: json, mood : str) -> json:
 
   api_key = keys.OPENAI_API_KEY
@@ -25,12 +20,7 @@ def get_fable_from_openai(unicorn: json, mood : str) -> json:
   elif (mood == "night"):
     story_theme = "dark, thrilling and a bit scary"
 
-<<<<<<< HEAD
-=======
-  
 
-  # Sending the prompt to the OpenAI API
->>>>>>> 3c22df6add5b316997d1a0150331f6e477fc6fee
   completion = client.chat.completions.create(
     model="gpt-3.5-turbo", 
     messages=[
