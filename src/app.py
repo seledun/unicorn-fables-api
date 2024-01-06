@@ -103,8 +103,9 @@ def submit_fable() :
         fable_votes = 0
         fable_text = generated_fable
         fable_unicorn = unicorn_uuid # For relational table
+        fable_spotify_url = spotify_url # Generate this
 
-        fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn)
+        fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn, fable_spotify_url)
         db.save_fable_to_database(fable)
        
         response = Response(json.dumps(fable.dictify()))

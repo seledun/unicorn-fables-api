@@ -16,11 +16,12 @@ def save_fable_to_database(fable: Fable) :
     fable_text = fable.text 
     fable_name = fable.name
     unicorn_id = fable.unicorn
+    spotify_url = fable.spotify_url
 
     conn = connect_to_database()
     cursor = conn.cursor()
     
-    cursor.execute('INSERT INTO fables (id, votes, text, name, unicorn) VALUES (?, ?, ?, ?, ?)', (fable_uuid, fable_votes, fable_text, fable_name, unicorn_id))
+    cursor.execute('INSERT INTO fables (id, votes, text, name, unicorn, spotify_url) VALUES (?, ?, ?, ?, ?, ?)', (fable_uuid, fable_votes, fable_text, fable_name, unicorn_id, spotify_url))
     conn.commit()
     cursor.close()
     return
@@ -33,7 +34,7 @@ def load_fable_from_database(fable_id: int) -> Fable :
     c.execute('SELECT * FROM fables WHERE id = ?', (fable_id,))
     fable = c.fetchone()
 
-    fable = Fable(fable[0], fable[1], fable[2], fable[3], fable[4])
+    fable = Fable(fable[0], fable[1], fable[2], fable[3], fable[4], fable[5])
     return fable
 
 # Save a unicorn to the database
@@ -69,7 +70,8 @@ def load_all_fables_from_database() -> list :
                 "votes": fable[1], 
                 "text": fable[2], 
                 "name": fable[3], 
-                "unicorn": fable[4]
+                "unicorn": fable[4],
+                "unicorn_name": fable[5]
             })
         
     return fable_list

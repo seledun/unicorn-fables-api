@@ -11,7 +11,7 @@ def create_fables_table() :
     conn = connect_to_database()
     cursor = conn.cursor()
 
-    cursor.execute('CREATE TABLE IF NOT EXISTS fables (id INTEGER PRIMARY KEY, votes INTEGER, text TEXT, name TEXT, unicorn INTEGER)')
+    cursor.execute('CREATE TABLE IF NOT EXISTS fables (id INTEGER PRIMARY KEY, votes INTEGER, text TEXT, name TEXT, unicorn INTEGER, spotify_url TEXT)')
     conn.commit()
     cursor.close()
     print("Fable table created")

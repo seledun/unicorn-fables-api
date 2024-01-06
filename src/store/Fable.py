@@ -7,6 +7,7 @@ class Fable :
                  text: str,
                  name: str,
                  unicorn: int,
+                 spotify_url: str
                  ) :
         
         self.uuid = uuid
@@ -14,6 +15,7 @@ class Fable :
         self.text = text
         self.name = name
         self.unicorn = unicorn
+        self.spotify_url = spotify_url
 
     # Convert fable object to dictionary
     def dictify(self) -> dict :
@@ -22,5 +24,6 @@ class Fable :
             "votes" : self.votes,
             "text" : self.text,
             "name" : self.name,
-            "unicorn" : self.unicorn
+            "unicorn" : self.unicorn,
+            "spotify_url" : self.spotify_url
         }
