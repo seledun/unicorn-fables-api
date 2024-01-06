@@ -4,6 +4,9 @@ import json
 import prompt_ai
 import store.databaseHelper as db
 
+from base64 import b64encode
+from keys import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
+
 from store.Unicorn import Unicorn
 from store.Fable import Fable
 from store.Location import Location
@@ -11,6 +14,10 @@ from flask import request
 from flask import Flask
 from flask import Response
 from flask_cors import CORS
+
+# Import API keys
+spotify_client_id = SPOTIFY_CLIENT_ID
+spotify_client_secret = SPOTIFY_CLIENT_SECRET
 
 API_VERSION = "0.0.1"
 
@@ -98,12 +105,16 @@ def submit_fable() :
         # Save local copy of unicorn to database
         db.save_unicorn_to_database(unicorn)
 
+        token = get_spotify_token()
+        search_result = spotify_search(token, unicorn.name)  
+        print(search_result)
+
         # Generate a random fable title using the set prefixes
         fable_name = random.choice(list(FABLE_PREFIXES)) + " " + unicorn.name + "en"
         fable_votes = 0
         fable_text = generated_fable
         fable_unicorn = unicorn_uuid # For relational table
-        fable_spotify_url = spotify_url # Generate this
+        fable_spotify_url = "" # Generate this
 
         fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn, fable_spotify_url)
         db.save_fable_to_database(fable)
@@ -241,7 +252,7 @@ def list_unicorns() -> []:
 
     return json.dumps(modified_response)
 
-#Removes the text from fables to avoid oversharing
+# Removes the text from fables to avoid oversharing
 def get_trimmed_fables() -> []:
     modified_response = []
     fables = db.load_all_fables_from_database()
@@ -256,3 +267,39 @@ def get_trimmed_fables() -> []:
 
     return json.dumps(modified_response)
 
+
+
+
+# Sends our credentials to Spotify and returns the access token
+def get_spotify_token():
+    print("SPOTIFY!")
+
+    auth_str = f"{spotify_client_id}:{spotify_client_secret}"
+    base64_auth_str = b64encode(auth_str.encode()).decode('utf-8')
+
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': f'Basic {base64_auth_str}'
+    }
+
+    payload = {
+        'grant_type': 'client_credentials'
+    }
+
+    response = requests.post('https://accounts.spotify.com/api/token', headers=headers, data=payload)
+    data = response.json()
+    
+    return data['access_token']
+
+# Sends authorization token and search query to Spotify and returns a track
+def spotify_search(token, query):
+    print("Inside searchTrack:", query)
+    print(f'https://api.spotify.com/v1/search?q={query}&type=track')
+    print(token)
+
+    headers = {'Authorization': f'Bearer {token}'}
+
+    response = requests.get(f'https://api.spotify.com/v1/search?q={query}&type=track&limit=1', headers=headers)
+    data = response.json()
+
+    return data
