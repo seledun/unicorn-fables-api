@@ -2,6 +2,7 @@ import requests
 import random
 import json
 import prompt_ai
+import store.databaseHelper as db
 
 from store.Unicorn import Unicorn
 from store.Fable import Fable
@@ -9,17 +10,19 @@ from store.Location import Location
 from flask import request
 from flask import Flask
 from flask import Response
-
 from flask_cors import CORS
-
-import store.databaseHelper as db
 
 API_VERSION = "0.0.1"
 
+# Used when saving a fable to the database
 FABLE_PREFIXES = {
     "Den magiska berättelsen om",
     "Den fantastiska berättelsen om",
     "Den underbara berättelsen om",
+    "Legenden om den kluriga",
+    "Legenden om den magiska",
+    "Sägnen om den förtrollande",
+    "Sägnen om den underbara",
     "Myten om den magiska",
     "Fabeln om den kluriga",
     "Sagan om den vackra",
@@ -30,6 +33,7 @@ app = Flask(__name__)
 CORS(app)
 
 # GET /version/unicorns
+# Gets all Unicorns from the Unicorn-API
 @app.route("/" + API_VERSION + "/unicorns", methods=['GET'])
 def list_all_unicorns() :
     resp = Response(json.dumps(list_unicorns()))
@@ -37,27 +41,25 @@ def list_all_unicorns() :
     return resp
 
 # POST /version/unicorns
+# Posts a new unicorn to the Unicorn-API
 @app.route("/" + API_VERSION + "/unicorns", methods=['POST'])
 def submit_unicorn() :
     return
 
 # GET /version/unicorns/<int:id>
+# Gets a specific Unicorn from the Unicorn-API
 @app.route("/" + API_VERSION + "/unicorns/<int:id>", methods=['GET'])
 def get_unicorn(id: int) :
    
     return fetch_specific_unicorn_as_json(id)
-
-
-
 
 # GET /version/fables
 # 1. Loads all fables from the database
 # 2. Returns a list of fables as a JSON object
 @app.route("/" + API_VERSION + "/fables", methods=['GET'])
 def list_all_fables() :
-    fables = db.load_all_fables_from_database()
-
-    response = Response(json.dumps(fables))
+    
+    response = Response(get_trimmed_fables())
     response.headers.set('Content-Type', 'application/json')
     
     return response
@@ -73,14 +75,13 @@ def list_all_fables() :
 # 4. Spara fabeln i vår databas
 @app.route("/" + API_VERSION + "/fables", methods=['POST'])
 def submit_fable() :
-
     data = request.get_json() # request-body
 
     unicorn_id = data.get("id")
     mood = data.get("mood")
 
     temp_unicorn = fetch_specific_unicorn_as_json(unicorn_id)
-    
+
     # Här ska vi kolla statuscodes för båda förfrågningarna,
     # tror vi behöver se till att fetch_specific_unicorn returnerar false vid fel
     if (temp_unicorn != None) :
@@ -98,12 +99,13 @@ def submit_fable() :
         db.save_unicorn_to_database(unicorn)
 
         # Generate a random fable title using the set prefixes
-        fable_name = random.choice(list(FABLE_PREFIXES)) + " " + unicorn.name
+        fable_name = random.choice(list(FABLE_PREFIXES)) + " " + unicorn.name + "en"
         fable_votes = 0
         fable_text = generated_fable
-        fable_unicorn = unicorn_id # 🤞 assuming Johan has unique UUIDs for unicorns
+        fable_unicorn = unicorn_uuid # For relational table
+        fable_spotify_url = spotify_url # Generate this
 
-        fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn)
+        fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn, fable_spotify_url)
         db.save_fable_to_database(fable)
        
         response = Response(json.dumps(fable.dictify()))
@@ -117,7 +119,7 @@ def submit_fable() :
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['GET'])
 def get_fable(id: int) :
     fable = db.load_fable_from_database(id)
-    response = Response(json.dumps(fable))
+    response = Response(json.dumps(fable.dictify()))
     response.content_type = "application/json"
 
     return response
@@ -127,11 +129,12 @@ def get_fable(id: int) :
 # 2. Uppdatera fabeln i databasen (troligtvis updatera votes med +1 för att få vårat PUT-verb)
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['PUT'])
 def update_fable(id: int) :
-    fable: Fable = db.load_fable_from_database(id)
+    fable : Fable = db.load_fable_from_database(id)
     fable.votes = fable.votes + 1
     db.update_fable(fable)
-    return
+    return Response(status=204) # 204 no content
 
+# Return unicorns
 def fetch_unicorns() -> list[Unicorn]:
     unicorns = []
     response = requests.get("http://unicorns.idioti.se/", headers={"Accept": "application/json"})
@@ -161,6 +164,7 @@ def fetch_unicorns() -> list[Unicorn]:
     return unicorns
     
 
+# Returns unicorns as a JSON objects
 def fetch_json_unicorns() -> list[Unicorn]:
     
     unicorns = []
@@ -187,12 +191,14 @@ def fetch_json_unicorns() -> list[Unicorn]:
 
     return unicorns
 
+# Returns chosen unicorn as a JSON object
 def fetch_specific_unicorn_as_json(id: int) -> Unicorn:
     
     unicorn = requests.get("http://unicorns.idioti.se/" + str(id), headers={"Accept": "application/json"})
     
     return unicorn.json()
 
+# Returns chosen unicorn
 def fetch_specific_unicorn(id: int) -> Unicorn:
 
     unicorn_response = requests.get("http://unicorns.idioti.se/" + str(id), headers={"Accept": "application/json"})
@@ -201,6 +207,7 @@ def fetch_specific_unicorn(id: int) -> Unicorn:
     
     return unicorn
 
+# Turns a JSON-objekt into an Unicorn object
 def build_a_unicorn(unicorn_parts: json) -> Unicorn:
 
     location = Location (
@@ -221,6 +228,7 @@ def build_a_unicorn(unicorn_parts: json) -> Unicorn:
     
     return unicorn
 
+# Returns a trimmed list of unicorns to avoid oversharing
 def list_unicorns() -> []:
     response = requests.get("http://unicorns.idioti.se", headers={"Accept": "application/json"})
     modified_response = [] 
@@ -233,12 +241,18 @@ def list_unicorns() -> []:
 
     return json.dumps(modified_response)
 
-# Test
-def fable_test () :
-    fable1 = Fable(1, 0, "This is a fable", "Fable 1", 1)
-    fable2 = Fable(2, 0, "This is a fable", "Fable 2", 2)
-    fable3 = Fable(3, 0, "This is a fable", "Fable 3", 3)
+#Removes the text from fables to avoid oversharing
+def get_trimmed_fables() -> []:
+    modified_response = []
+    fables = db.load_all_fables_from_database()
+    lenght = len(fables)
+    for i in range(0, lenght):
+        fable_id = fables[i].get('id')
+        fable_votes = fables[i].get('votes')
+        fable_name = fables[i].get('name')
+        fable_unicorn = fables[i].get('unicorn')
+        modified_response.append({"id": fable_id, "votes": fable_votes, "name": fable_name, "unicorn": fable_unicorn})
 
-    db.save_fable_to_database(fable1)
-    db.save_fable_to_database(fable2)
-    db.save_fable_to_database(fable3)
+
+    return json.dumps(modified_response)
+

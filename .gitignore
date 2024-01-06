@@ -4,3 +4,4 @@ venv/
 src/__pycache__
 store/__pycache__
 .env
+src/keys.py
