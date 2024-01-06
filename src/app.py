@@ -107,14 +107,13 @@ def submit_fable() :
 
         token = get_spotify_token()
         search_result = spotify_search(token, unicorn.name)  
-        print(search_result)
 
         # Generate a random fable title using the set prefixes
         fable_name = random.choice(list(FABLE_PREFIXES)) + " " + unicorn.name + "en"
         fable_votes = 0
         fable_text = generated_fable
         fable_unicorn = unicorn_uuid # For relational table
-        fable_spotify_url = "" # Generate this
+        fable_spotify_url = search_result # Result from spotify api
 
         fable = Fable(fable_uuid, fable_votes, fable_text, fable_name, fable_unicorn, fable_spotify_url)
         db.save_fable_to_database(fable)
@@ -302,4 +301,6 @@ def spotify_search(token, query):
     response = requests.get(f'https://api.spotify.com/v1/search?q={query}&type=track&limit=1', headers=headers)
     data = response.json()
 
-    return data
+    resp = data['tracks']['items'][0]['uri'] # Get track uri
+
+    return resp
