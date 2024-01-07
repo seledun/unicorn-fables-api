@@ -3,7 +3,8 @@ from .Unicorn import Unicorn
 
 import sqlite3
 
-# Connection to sqlite3
+# Creates a database connection
+# Returns a connection object
 def connect_to_database() :
     conn = sqlite3.connect('fables.db')
     conn.text_factory = str

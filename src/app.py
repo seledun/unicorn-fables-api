@@ -10,6 +10,7 @@ from keys import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 from store.Unicorn import Unicorn
 from store.Fable import Fable
 from store.Location import Location
+
 from flask import request
 from flask import Flask
 from flask import Response
@@ -19,9 +20,10 @@ from flask_cors import CORS
 spotify_client_id = SPOTIFY_CLIENT_ID
 spotify_client_secret = SPOTIFY_CLIENT_SECRET
 
+# API Version number used for version control
 API_VERSION = "0.0.1"
 
-# Used when saving a fable to the database
+# Prefixes to use when generating a fable, to make it more interesting
 FABLE_PREFIXES = {
     "Den magiska berättelsen om",
     "Den fantastiska berättelsen om",
@@ -63,19 +65,20 @@ FABLE_PREFIXES = {
     "Sägnen om den förtrollade"
 }
 
+# Create Flask app and enable CORS
 app = Flask(__name__)
 CORS(app)
 
 # GET /version/unicorns
-# Gets all Unicorns from the Unicorn-API
+# Gets all Unicorns from the Unicorn-API and returns them as a JSON object
 @app.route("/" + API_VERSION + "/unicorns", methods=['GET'])
 def list_all_unicorns() :
-    resp = Response(json.dumps(list_unicorns()))
+    resp = Response(list_unicorns())
     resp.headers.set('Content-Type', 'application/json')
     return resp
 
 # GET /version/unicorns/<int:id>
-# Gets a specific Unicorn from the Unicorn-API
+# Gets a specific Unicorn from the Unicorn-API and returns it as a JSON object
 @app.route("/" + API_VERSION + "/unicorns/<int:id>", methods=['GET'])
 def get_unicorn(id: int) :
     unicorn = fetch_specific_unicorn(id)
@@ -96,14 +99,9 @@ def list_all_fables() :
     return response
 
 # POST /version/fables
-# Tar in en fabel som ska sparas i databasen
-# {text, name, unicorn_id}
-#
-# 1. Hämta enhörning från Johans databas
-# 1.1. Skapa en lokal enhörning kopia av Enhörningen för fabeln m. attributen (uuid, namn, desc, image)
-# 2. Generera ett random UUID för enhörningskopian (vill vi använda Johans enhörnings-ID?) och fabeln
-# 3. Spara enhörningskopian i vår databas
-# 4. Spara fabeln i vår databas
+# Takes in a JSON-object via request body with id and mood
+# and with that information it generates a fable and returns it as a JSON-object.
+# If the request is invalid, it returns a 400 status code.
 @app.route("/" + API_VERSION + "/fables", methods=['POST'])
 def submit_fable() :
     data = request.get_json() # request-body
@@ -153,8 +151,8 @@ def submit_fable() :
     return response
 
 # GET /version/fables/<int:id>
-# 1. Hämta en fabel från databasen
-# 2. Returnera fabeln som ett JSON-objekt
+# Returns a fable from the database as a JSON object
+# If the fable doesn't exist, it returns a 404 status code
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['GET'])
 def get_fable(id: int) :
     fable = db.load_fable_from_database(id)
@@ -167,8 +165,8 @@ def get_fable(id: int) :
     return response
 
 # PUT /version/fables/<int:id>
-# 1. Ta in ett JSON-objekt via request body
-# 2. Uppdatera fabeln i databasen (troligtvis updatera votes med +1 för att få vårat PUT-verb)
+# Updates a fable in the database and returns a 204 status code on success
+# If the fable doesn't exist, it returns a 404 status code
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['PUT'])
 def update_fable(id: int) :
     fable : Fable = db.load_fable_from_database(id)
@@ -182,7 +180,6 @@ def update_fable(id: int) :
     
 # Returns chosen unicorn as a JSON object
 def fetch_specific_unicorn(id: int) -> Unicorn:
-    
     unicorn = requests.get("http://unicorns.idioti.se/" + str(id), headers={"Accept": "application/json"})
 
     try :
@@ -193,9 +190,9 @@ def fetch_specific_unicorn(id: int) -> Unicorn:
 
     return unicorn.json()
 
-# Turns a JSON-objekt into an Unicorn object
+# Turns a Unicorn representation as a JSON into a Unicorn object
+# to be used when saving to local database
 def build_a_unicorn(unicorn_parts: json) -> Unicorn:
-
     location = Location (
         unicorn_parts.get("spottedWhere").get("name"), 
         unicorn_parts.get("spottedWhere").get("lat"),
@@ -242,7 +239,8 @@ def get_trimmed_fables() -> []:
 
     return json.dumps(modified_response)
 
-# Sends our credentials to Spotify and returns the access token
+# Sends a request to Spotify to get an authorization token
+# Returns the token as a string on success
 def get_spotify_token():
     print("SPOTIFY!")
 
@@ -263,7 +261,8 @@ def get_spotify_token():
     
     return data['access_token']
 
-# Sends authorization token and search query to Spotify and returns a track
+# Sends authorization token and formatted query to Spotify
+# Returns the track uri as a string on success
 def spotify_search(token, query):
     print("Inside searchTrack:", query)
     print(f'https://api.spotify.com/v1/search?q={query}&type=track')

@@ -1,7 +1,6 @@
 from .Location import Location
 
 class Unicorn :
-    # Constructor for the Unicorn class
     def __init__ (
             self, 
             uuid: int,

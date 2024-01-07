@@ -1,13 +1,14 @@
 from openai import OpenAI
-import os
 import json
 from store.Unicorn import Unicorn 
 import keys
 
+# Get a fable from OpenAI
+# Using the OpenAI API, we can generate a fable based on the unicorn and the mood
+# The fable is returned as a JSON object
 def get_fable_from_openai(unicorn: json, mood : str) -> json:
 
   api_key = keys.OPENAI_API_KEY
-
   client = OpenAI(api_key=api_key)
 
   unicorn_name = unicorn.get("name") 
