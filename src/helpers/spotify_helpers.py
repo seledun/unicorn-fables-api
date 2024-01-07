@@ -7,7 +7,7 @@ spotify_client_secret = SPOTIFY_CLIENT_SECRET
 
 # Sends a request to Spotify to get an authorization token
 # Returns the token as a string on success
-def get_spotify_token():
+def get_spotify_token() -> str:
     auth_str = f"{spotify_client_id}:{spotify_client_secret}"
     base64_auth_str = b64encode(auth_str.encode()).decode('utf-8')
 
@@ -27,7 +27,7 @@ def get_spotify_token():
 
 # Sends authorization token and formatted query to Spotify
 # Returns the track uri as a string on success
-def spotify_search(token, query):
+def spotify_search(token, query) -> str:
     headers = {'Authorization': f'Bearer {token}'}
 
     response = requests.get(f'https://api.spotify.com/v1/search?q={query}&type=track&limit=1', headers=headers)

@@ -68,7 +68,7 @@ def build_a_unicorn(unicorn_parts: json) -> Unicorn:
     return unicorn
 
 # Returns a trimmed list of unicorns to avoid oversharing
-def list_unicorns() -> []:
+def list_unicorns() -> json:
     response = requests.get("http://unicorns.idioti.se", headers={"Accept": "application/json"})
     modified_response = [] 
 

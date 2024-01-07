@@ -5,7 +5,7 @@ import sqlite3
 
 # Creates a database connection
 # Returns a connection object
-def connect_to_database() :
+def connect_to_database() -> sqlite3.Connection:
     conn = sqlite3.connect('fables.db')
     conn.text_factory = str
     return conn
