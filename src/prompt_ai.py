@@ -1,6 +1,5 @@
 from openai import OpenAI
 import json
-from store.Unicorn import Unicorn 
 import keys
 
 # Get a fable from OpenAI

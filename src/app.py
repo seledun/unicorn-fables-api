@@ -4,21 +4,16 @@ import json
 import prompt_ai
 import store.databaseHelper as db
 
-from base64 import b64encode
-from keys import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
-
 from store.Unicorn import Unicorn
 from store.Fable import Fable
-from store.Location import Location
 
 from flask import request
 from flask import Flask
 from flask import Response
 from flask_cors import CORS
 
-# Import API keys
-spotify_client_id = SPOTIFY_CLIENT_ID
-spotify_client_secret = SPOTIFY_CLIENT_SECRET
+from helpers.spotify_helpers import get_spotify_token, spotify_search
+from helpers.unicorn_helpers import build_a_unicorn, list_unicorns
 
 # API Version number used for version control
 API_VERSION = "0.0.1"
@@ -93,7 +88,7 @@ def get_unicorn(id: int) :
 @app.route("/" + API_VERSION + "/fables", methods=['GET'])
 def list_all_fables() :
     
-    response = Response(get_trimmed_fables())
+    response = Response(json.dumps(db.load_all_fables_from_database()))
     response.headers.set('Content-Type', 'application/json')
     
     return response
@@ -189,90 +184,3 @@ def fetch_specific_unicorn(id: int) -> Unicorn:
         return None
 
     return unicorn.json()
-
-# Turns a Unicorn representation as a JSON into a Unicorn object
-# to be used when saving to local database
-def build_a_unicorn(unicorn_parts: json) -> Unicorn:
-    location = Location (
-        unicorn_parts.get("spottedWhere").get("name"), 
-        unicorn_parts.get("spottedWhere").get("lat"),
-        unicorn_parts.get("spottedWhere").get("lon")
-        )
-
-    unicorn = Unicorn (
-        unicorn_parts.get("id"), 
-        unicorn_parts.get("image"), 
-        unicorn_parts.get("name"), 
-        unicorn_parts.get("spottedWhen"), 
-        unicorn_parts.get("description"), 
-        unicorn_parts.get("reportedBy"),
-        location
-        )
-    
-    return unicorn
-
-# Returns a trimmed list of unicorns to avoid oversharing
-def list_unicorns() -> []:
-    response = requests.get("http://unicorns.idioti.se", headers={"Accept": "application/json"})
-    modified_response = [] 
-
-    length = len(json.loads(response.text))
-    for i in range(0, length):
-        unicorn_id = response.json()[i].get("id")
-        unicorn_name = response.json()[i].get("name")
-        modified_response.append({"id": unicorn_id, "name": unicorn_name})
-
-    return json.dumps(modified_response)
-
-# Removes the text from fables to avoid oversharing
-def get_trimmed_fables() -> []:
-    modified_response = []
-    fables = db.load_all_fables_from_database()
-    lenght = len(fables)
-    for i in range(0, lenght):
-        fable_id = fables[i].get('id')
-        fable_votes = fables[i].get('votes')
-        fable_name = fables[i].get('name')
-        fable_unicorn = fables[i].get('unicorn')
-        modified_response.append({"id": fable_id, "votes": fable_votes, "name": fable_name, "unicorn": fable_unicorn})
-
-
-    return json.dumps(modified_response)
-
-# Sends a request to Spotify to get an authorization token
-# Returns the token as a string on success
-def get_spotify_token():
-    print("SPOTIFY!")
-
-    auth_str = f"{spotify_client_id}:{spotify_client_secret}"
-    base64_auth_str = b64encode(auth_str.encode()).decode('utf-8')
-
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': f'Basic {base64_auth_str}'
-    }
-
-    payload = {
-        'grant_type': 'client_credentials'
-    }
-
-    response = requests.post('https://accounts.spotify.com/api/token', headers=headers, data=payload)
-    data = response.json()
-    
-    return data['access_token']
-
-# Sends authorization token and formatted query to Spotify
-# Returns the track uri as a string on success
-def spotify_search(token, query):
-    print("Inside searchTrack:", query)
-    print(f'https://api.spotify.com/v1/search?q={query}&type=track')
-    print(token)
-
-    headers = {'Authorization': f'Bearer {token}'}
-
-    response = requests.get(f'https://api.spotify.com/v1/search?q={query}&type=track&limit=1', headers=headers)
-    data = response.json()
-
-    resp = data['tracks']['items'][0]['uri'] # Get track uri
-
-    return resp

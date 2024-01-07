@@ -72,7 +72,6 @@ def load_all_fables_from_database() -> list :
         fable_list.append({
                 "id" : fable[0],
                 "votes": fable[1], 
-                "text": fable[2], 
                 "name": fable[3], 
                 "unicorn": fable[4],
                 "unicorn_name": fable[5]
