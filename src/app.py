@@ -74,18 +74,15 @@ def list_all_unicorns() :
     resp.headers.set('Content-Type', 'application/json')
     return resp
 
-# POST /version/unicorns
-# Posts a new unicorn to the Unicorn-API
-@app.route("/" + API_VERSION + "/unicorns", methods=['POST'])
-def submit_unicorn() :
-    return
-
 # GET /version/unicorns/<int:id>
 # Gets a specific Unicorn from the Unicorn-API
 @app.route("/" + API_VERSION + "/unicorns/<int:id>", methods=['GET'])
 def get_unicorn(id: int) :
-   
-    return fetch_specific_unicorn_as_json(id)
+    unicorn = fetch_specific_unicorn(id)
+    if (unicorn == None) :
+        return Response(status = 404)
+    
+    return fetch_specific_unicorn(id)
 
 # GET /version/fables
 # 1. Loads all fables from the database
@@ -112,13 +109,15 @@ def submit_fable() :
     data = request.get_json() # request-body
 
     unicorn_id = data.get("id")
-    mood = data.get("mood")
+    mood = data.get("mood")    
 
-    temp_unicorn = fetch_specific_unicorn_as_json(unicorn_id)
+    mood_check = (mood == "happy" or mood == "night")
+
+    temp_unicorn = fetch_specific_unicorn(unicorn_id)
 
     # Här ska vi kolla statuscodes för båda förfrågningarna,
     # tror vi behöver se till att fetch_specific_unicorn returnerar false vid fel
-    if (temp_unicorn != None) :
+    if (temp_unicorn != None and mood_check) :
         unicorn_uuid = random.randint(0, 100000) # 🤞 no collisions
         fable_uuid = random.randint(0, 100000) # 🤞 no collisions
 
@@ -148,6 +147,9 @@ def submit_fable() :
         response = Response(json.dumps(fable.dictify()))
         response.headers.set('Content-Type', 'application/json')
 
+    else :
+        response = Response(status = 400)
+
     return response
 
 # GET /version/fables/<int:id>
@@ -156,6 +158,9 @@ def submit_fable() :
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['GET'])
 def get_fable(id: int) :
     fable = db.load_fable_from_database(id)
+    if (fable == None) :
+        return Response(status = 404)
+
     response = Response(json.dumps(fable.dictify()))
     response.content_type = "application/json"
 
@@ -167,82 +172,26 @@ def get_fable(id: int) :
 @app.route("/" + API_VERSION + "/fables/<int:id>", methods=['PUT'])
 def update_fable(id: int) :
     fable : Fable = db.load_fable_from_database(id)
+
+    if (fable == None) :
+        return Response(status = 404)
+
     fable.votes = fable.votes + 1
     db.update_fable(fable)
-    return Response(status=204) # 204 no content
-
-# Return unicorns
-def fetch_unicorns() -> list[Unicorn]:
-    unicorns = []
-    response = requests.get("http://unicorns.idioti.se/", headers={"Accept": "application/json"})
-
-    lenght = len(json.loads(response.text)) 
-
-    number_of_unicorns = []
-    for i in range(0, lenght):
-        number_of_unicorns.append(i)
-
-    count = 0
-    for i in range(0, lenght):
-
-        if count >= 5:
-            break
-
-        random_number = random.choice(number_of_unicorns)
-        number_of_unicorns.remove(random_number)
-        random_unicorn_id = response.json()[random_number].get("id")
-        unicorn_response = requests.get("http://unicorns.idioti.se/" + str(random_unicorn_id), headers={"Accept": "application/json"}) 
-
-        unicorn = build_a_unicorn(unicorn_response)
-
-        unicorns.append(unicorn)
-        count += 1
-
-    return unicorns
+    return Response(status = 204) # 204 no content
     
-
-# Returns unicorns as a JSON objects
-def fetch_json_unicorns() -> list[Unicorn]:
-    
-    unicorns = []
-    response = requests.get("http://unicorns.idioti.se", headers={"Accept": "application/json"})
-
-    lenght = len(json.loads(response.text)) 
-
-    number_of_unicorns = []
-    for i in range(0, lenght):
-        number_of_unicorns.append(i)
-
-    count = 0
-    for i in range(0, lenght):
-
-        if count >= 5:
-            break
-
-        random_number = random.choice(number_of_unicorns)
-        number_of_unicorns.remove(random_number)
-        random_unicorn_id = response.json()[random_number].get("id")
-        unicorn = requests.get("http://unicorns.idioti.se/" + str(random_unicorn_id), headers={"Accept": "application/json"})
-        unicorns.append(unicorn.json())
-        count += 1
-
-    return unicorns
-
 # Returns chosen unicorn as a JSON object
-def fetch_specific_unicorn_as_json(id: int) -> Unicorn:
+def fetch_specific_unicorn(id: int) -> Unicorn:
     
     unicorn = requests.get("http://unicorns.idioti.se/" + str(id), headers={"Accept": "application/json"})
-    
+
+    try :
+        resp = unicorn.json()["name"]
+
+    except requests.exceptions.JSONDecodeError : 
+        return None
+
     return unicorn.json()
-
-# Returns chosen unicorn
-def fetch_specific_unicorn(id: int) -> Unicorn:
-
-    unicorn_response = requests.get("http://unicorns.idioti.se/" + str(id), headers={"Accept": "application/json"})
-
-    unicorn = build_a_unicorn(unicorn_response)
-    
-    return unicorn
 
 # Turns a JSON-objekt into an Unicorn object
 def build_a_unicorn(unicorn_parts: json) -> Unicorn:
@@ -292,9 +241,6 @@ def get_trimmed_fables() -> []:
 
 
     return json.dumps(modified_response)
-
-
-
 
 # Sends our credentials to Spotify and returns the access token
 def get_spotify_token():
