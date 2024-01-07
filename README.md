@@ -12,3 +12,6 @@ flask --app src/app run
 ### run.sh
 Servern kan startas genom att köra run.sh-skriptet\
 skriptet förväntar sig att python och pip finns i path
+
+## Dokumentation
+https://m10p5306.docs.apiary.io/
