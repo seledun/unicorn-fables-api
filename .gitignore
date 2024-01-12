@@ -1,7 +1,6 @@
 .venv/
 venv/
 .idea/
-src/__pycache__
-src/store/__pycache__/
+*__pycache__/
 .env
 src/keys.py

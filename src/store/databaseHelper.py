@@ -3,8 +3,9 @@ from .Unicorn import Unicorn
 
 import sqlite3
 
-# Connection to sqlite3
-def connect_to_database() :
+# Creates a database connection
+# Returns a connection object
+def connect_to_database() -> sqlite3.Connection:
     conn = sqlite3.connect('fables.db')
     conn.text_factory = str
     return conn
@@ -33,6 +34,9 @@ def load_fable_from_database(fable_id: int) -> Fable :
     
     c.execute('SELECT * FROM fables WHERE id = ?', (fable_id,))
     fable = c.fetchone()
+
+    if (fable == None) :
+        return None
 
     fable = Fable(fable[0], fable[1], fable[2], fable[3], fable[4], fable[5])
     return fable
@@ -68,7 +72,6 @@ def load_all_fables_from_database() -> list :
         fable_list.append({
                 "id" : fable[0],
                 "votes": fable[1], 
-                "text": fable[2], 
                 "name": fable[3], 
                 "unicorn": fable[4],
                 "unicorn_name": fable[5]
